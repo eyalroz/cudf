@@ -46,10 +46,13 @@ include(FeatureSummary)
 include(CheckIncludeFiles)
 include(CheckLibraryExists)
 include(CTest)
+include(ExternalProject)
 
 # Include custom modules (see cmake directory)
 include(ConfigureGoogleTest)
 include(ConfigureArrow)
+include(ConfigureCudaApiWrappers)
+include(ConfigureGSL)
 
 find_package(CUDA)
 set_package_properties(
@@ -116,6 +119,15 @@ if(HASH_JOIN)
   set(CUDA_NVCC_FLAGS  ${CUDA_NVCC_FLAGS};-DHASH_JOIN)
 endif()
 
+find_package(Boost 1.54.0 REQUIRED COMPONENTS ) # Required for boost::variant
+# See http://stackoverflow.com/a/30877725/1593077
+#target_compile_definitions(Boost::boost PUBLIC "-DBOOST_SYSTEM_NO_DEPRECATED")
+set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -DBOOST_SYSTEM_NO_DEPRECATED")
+# These next two lines should not be necessary, but I don't get the proper -L switch
+# without them... see http://stackoverflow.com/q/40208960/1593077
+#set (CMAKE_SHARED_LINKER_FLAGS ${CMAKE_SHARED_LINKER_FLAGS} "-L${Boost_LIBRARY_DIRS}")
+#set (CMAKE_EXE_LINKER_FLAGS ${CMAKE_EXE_LINKER_FLAGS} "-L${Boost_LIBRARY_DIRS}")
+
 
 # switch between cudaMalloc and cudaMallocManaged for hash tables
 option(HT_LEGACY_ALLOCATOR "legacy allocator for hash tables" ON)
@@ -158,6 +170,8 @@ cuda_add_library(gdf SHARED
     src/validops.cu
     src/nvtx_utils.cpp
 )
+
+target_link_libraries(gdf Boost::boost) # Dependency on the header-only libraries in Boost
 
 # Switch to enable NVTX ranges for profiling
 option(USE_NVTX "Build with NVTX" ON)
