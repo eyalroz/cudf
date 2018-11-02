@@ -1,4 +1,4 @@
-## common
+## Common
 __pycache__
 *.pyc
 *.o
@@ -11,10 +11,17 @@ __pycache__
 *.pytest_cache
 build
 htmlcov
+*.diff
+*.orig
+*.rej
+
+DartConfiguration.tcl
 
 ## libgdf
 Debug
 /libgdf/thirdparty/googletest/
+thirdparty/cuda-api-wrappers
+thirdparty/gsl
 /libgdf/include/gdf/ipc/File_generated.h
 /libgdf/include/gdf/ipc/Message_generated.h
 /libgdf/include/gdf/ipc/Schema_generated.h
@@ -24,3 +31,5 @@ Debug
 
 ## eclipse
 .project
+.cproject
+.settings
