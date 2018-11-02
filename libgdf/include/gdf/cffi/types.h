@@ -56,6 +56,7 @@ typedef enum {
     GDF_HASH_TABLE_INSERT_FAILURE,    /**< Failed to insert to hash table, likely because its full */
     GDF_UNSUPPORTED_JOIN_TYPE,        /**< The type of join requested is unsupported */
     GDF_C_ERROR,                      /**< C error not related to CUDA */
+    GDF_CPP_ERROR,                    /**< C++ error not related to CUDA */
     GDF_FILE_ERROR,                   /**< error processing sepcified file */      
     GDF_MEMORYMANAGER_ERROR,          /**< Memory manager error (see memory.h) */
     GDF_UNDEFINED_NVTX_COLOR,         /**< The requested color used to define an NVTX range is not defined */
