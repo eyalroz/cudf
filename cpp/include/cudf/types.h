@@ -1,12 +1,14 @@
 #pragma once
 
+#include <stdint.h>
+
 typedef size_t gdf_size_type;
 typedef gdf_size_type gdf_index_type;
-typedef unsigned char gdf_valid_type;
-typedef	long	gdf_date64;
-typedef	int		gdf_date32;
-typedef	int		gdf_category;
-typedef	long	gdf_timestamp;
+typedef uint8_t gdf_valid_type;
+typedef int64_t gdf_date64;
+typedef int32_t gdf_date32;
+typedef int64_t gdf_timestamp;
+typedef int32_t gdf_category;
 
 /* --------------------------------------------------------------------------*/
  /**
