@@ -34,8 +34,8 @@
 #include <utilities/int_fastdiv.h>
 #include <rmm/thrust_rmm_allocator.h>
 
-#include "tests/utilities/cudf_test_utils.cuh"
-#include "tests/utilities/cudf_test_fixtures.h"
+#include <tests/utilities/cudf_test_utils.cuh>
+#include <tests/utilities/cudf_test_fixtures.h>
 
 
 

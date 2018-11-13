@@ -14,7 +14,7 @@
 #include <utilities/cudf_utils.h>
 #include <cudf/functions.h>
 
-#include "tests/utilities/cudf_test_utils.cuh"
+#include <tests/utilities/cudf_test_utils.cuh>
 
 // uncomment to enable benchmarking gdf_column_concat
 //#define ENABLE_CONCAT_BENCHMARK 

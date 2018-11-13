@@ -80,24 +80,15 @@ gdf_size_type get_number_of_bytes_for_valid (gdf_size_type column_size) {
 }
 
 
-// note: functor inherits from unary_function
-struct modulus_bit_width : public thrust::unary_function<gdf_size_type,gdf_size_type>
+struct modulus_bit_width : public thrust::unary_function<gdf_size_type, gdf_size_type>
 {
-	gdf_size_type n_bytes;
-	gdf_size_type column_size;
-	
-	modulus_bit_width (gdf_size_type b_nytes, gdf_size_type column_size) {
-		this->n_bytes = n_bytes;
-		this->column_size = column_size;
-	}
+        // Given an index of a bit within a column of gdf_valid_type bit-containers,
+        // returns the position of the bit within the single gdf_valid_type in which
+        // it is located
 	__host__ __device__
 	gdf_size_type operator()(gdf_size_type x) const
 	{
-		gdf_size_type col_position = x / 8;	
-        gdf_size_type length_col = n_bytes != col_position+1 ? GDF_VALID_BITSIZE : column_size - GDF_VALID_BITSIZE * (n_bytes - 1);
-		//return x % GDF_VALID_BITSIZE;
-		return (length_col - 1) - (x % 8);
-		// x << 
+		return x % GDF_VALID_BITSIZE;
 	}
 };
 
@@ -179,16 +170,16 @@ struct is_bit_set
 
 struct bit_mask_pack_op : public thrust::unary_function<int64_t,gdf_valid_type>
 {
+	static_assert(sizeof(gdf_valid_type) == 1, "Unexpected size of gdf_valid_type");
 	__host__ __device__
 		gdf_valid_type operator()(const int64_t expanded)
 		{
 			gdf_valid_type result = 0;
-			for(unsigned int i = 0; i < GDF_VALID_BITSIZE; i++){
-				// 0, 8, 16, ....,48,  56
-				unsigned char byte = (expanded >> ( (GDF_VALID_BITSIZE - 1 - i )  * 8));
+			for(unsigned i = 0; i < GDF_VALID_BITSIZE; i++){
+				unsigned char byte = (expanded >> (i * CHAR_BIT));
 				result |= (byte & 1) << i;
 			}
-			return (result);
+			return result;
 		}
 };
 
@@ -218,7 +209,7 @@ gdf_error gpu_apply_stencil(gdf_column *lhs, gdf_column * stencil, gdf_column * 
 
 	size_t n_bytes = get_number_of_bytes_for_valid(stencil->size);
 
-	bit_position_iterator bit_position_iter(thrust::make_counting_iterator<gdf_size_type>(0), modulus_bit_width(n_bytes, stencil->size));
+	bit_position_iterator bit_position_iter(thrust::make_counting_iterator<gdf_size_type>(0), modulus_bit_width());
 	gdf_valid_iterator valid_iterator(thrust::detail::make_normal_iterator(thrust::device_pointer_cast(stencil->valid)),GDF_VALID_BITSIZE);
 	//TODO: can probably make this happen with some kind of iterator so it can work on any width size
 
@@ -234,7 +225,7 @@ gdf_error gpu_apply_stencil(gdf_column *lhs, gdf_column * stencil, gdf_column * 
 					valid_iterator,
 					thrust::make_transform_iterator<modulus_bit_width, thrust::counting_iterator<gdf_size_type> >(
 							thrust::make_counting_iterator<gdf_size_type>(0),
-							modulus_bit_width(n_bytes, stencil->size))
+							modulus_bit_width())
 			));
 
 	//NOTE!!!! the output column is getting set to a specific size  but we are NOT compacting the allocation,
@@ -295,7 +286,7 @@ gdf_error gpu_apply_stencil(gdf_column *lhs, gdf_column * stencil, gdf_column * 
 					valid_iterator,
 					thrust::make_transform_iterator<modulus_bit_width, thrust::counting_iterator<gdf_size_type> >(
 							thrust::make_counting_iterator<gdf_size_type>(0),
-							modulus_bit_width(n_bytes, stencil->size))
+							modulus_bit_width())
 			)
 	);
 
@@ -491,5 +482,3 @@ gdf_error gpu_concat(gdf_column *lhs, gdf_column *rhs, gdf_column *output)
 	cudaStreamDestroy(stream);
 	return GDF_SUCCESS;
 }
-
-
