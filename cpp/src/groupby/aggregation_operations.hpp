@@ -25,16 +25,16 @@
 /** 
  * @file aggregation_operations.hpp
  * @brief This header defines the functors that may be used as aggregation operations for 
- * the hash-based groupby implementation. Each functor must define an 'identity value'.
- * The identity value 'I' of an operation 'op' is defined as: for any x, op(x,I) == x.
- * This identity value is used to initialize the hash table values
+ * the hash-based groupby implementation. Each functor must define a 'neutral value'.
+ * The neutral value 'I' of an operation 'op' is defined as: for any x, op(x,I) == x.
+ * This neutral value is used to initialize the hash table values
  * Every functor accepts a 'new_value' which is the new value being inserted into the 
  * hash table and an 'old_value' which is the existing value in the hash table
  */
 /* ----------------------------------------------------------------------------*/
 template<typename value_type>
 struct max_op{
-  constexpr static value_type IDENTITY{std::numeric_limits<value_type>::lowest()};
+  constexpr static value_type neutral_value{std::numeric_limits<value_type>::lowest()};
 
   CUDA_HOST_DEVICE_CALLABLE
   value_type operator()(value_type new_value, value_type old_value)
@@ -46,7 +46,7 @@ struct max_op{
 template<typename value_type>
 struct min_op 
 {
-  constexpr static value_type IDENTITY{std::numeric_limits<value_type>::max()};
+  constexpr static value_type neutral_value{std::numeric_limits<value_type>::max()};
 
   CUDA_HOST_DEVICE_CALLABLE
   value_type operator()(value_type new_value, value_type old_value)
@@ -58,7 +58,7 @@ struct min_op
 template<typename value_type>
 struct count_op 
 {
-  constexpr static value_type IDENTITY{0};
+  constexpr static value_type neutral_value{0};
 
   CUDA_HOST_DEVICE_CALLABLE
   value_type operator()(value_type new_value, value_type old_value)
@@ -70,7 +70,7 @@ struct count_op
 template<typename value_type>
 struct sum_op 
 {
-  constexpr static value_type IDENTITY{0};
+  constexpr static value_type neutral_value{0};
 
   CUDA_HOST_DEVICE_CALLABLE
   value_type operator()(value_type new_value, value_type old_value)
@@ -83,7 +83,7 @@ struct sum_op
 template<typename value_type>
 struct avg_op
 {
-  constexpr static value_type IDENTITY{};
+  constexpr static value_type neutral_value{};
   CUDA_HOST_DEVICE_CALLABLE
   value_type operator()(value_type new_value, value_type old_value)
   {

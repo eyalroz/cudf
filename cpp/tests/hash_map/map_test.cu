@@ -56,7 +56,7 @@ struct MapTest : public GdfTest
   std::unique_ptr<map_type> the_map;
 
   const key_type unused_key = std::numeric_limits<key_type>::max();
-  const value_type unused_value = op_type::IDENTITY;
+  const value_type unused_value = op_type::neutral_value;
 
   const int size;
 
@@ -69,7 +69,7 @@ struct MapTest : public GdfTest
   std::unordered_map<key_type, value_type> expected_values;
 
   MapTest(const int hash_table_size = 10000)
-    : size(hash_table_size), the_map(new map_type(hash_table_size, op_type::IDENTITY))
+    : size(hash_table_size), the_map(new map_type(hash_table_size, op_type::neutral_value))
   {
   }
 

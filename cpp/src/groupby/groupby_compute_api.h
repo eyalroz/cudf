@@ -162,8 +162,8 @@ gdf_error GroupbyHash(gdf_table<size_type> const & groupby_input_table,
   // e.g., for a 50% occupancy, the size of the hash table is twice that of the input
   const size_type hash_table_size = static_cast<size_type>((static_cast<uint64_t>(input_num_rows) * 100 / DEFAULT_HASH_TABLE_OCCUPANCY));
   
-  // Initialize the hash table with the aggregation operation functor's identity value
-  std::unique_ptr<map_type> the_map(new map_type(hash_table_size, aggregation_operation::IDENTITY));
+  // Initialize the hash table with the aggregation operation functor's neutral value
+  std::unique_ptr<map_type> the_map(new map_type(hash_table_size, aggregation_operation::neutral_value));
 
   const dim3 build_grid_size ((input_num_rows + THREAD_BLOCK_SIZE - 1) / THREAD_BLOCK_SIZE, 1, 1);
   const dim3 block_size (THREAD_BLOCK_SIZE, 1, 1);

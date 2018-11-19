@@ -25,7 +25,7 @@ Generic reduction implementation with support for validity mask
 template<typename T, typename F, typename Ld>
 __global__
 void gpu_reduction_op(const T *data, const gdf_valid_type *mask,
-                      gdf_size_type size, T *results, F functor, T identity,
+                      gdf_size_type size, T *results, F functor, T neutral_value,
                       Ld loader)
 {
     typedef cub::BlockReduce<T, REDUCTION_BLOCK_SIZE> BlockReduce;
@@ -38,13 +38,13 @@ void gpu_reduction_op(const T *data, const gdf_valid_type *mask,
 
     int step = blksz * gridsz;
 
-    T agg = identity;
+    T agg = neutral_value;
 
     for (int base=blkid * blksz; base<size; base+=step) {
         // Threadblock synchronous loop
         int i = base + tid;
         // load
-        T loaded = identity;
+        T loaded = neutral_value;
         if (i < size && gdf_is_valid(mask, i))
             loaded = loader(data, i);
             
@@ -63,7 +63,7 @@ void gpu_reduction_op(const T *data, const gdf_valid_type *mask,
 template<typename T, typename F>
 struct ReduceOp {
     static
-    gdf_error launch(gdf_column *input, T identity, T *output,
+    gdf_error launch(gdf_column *input, T neutral_value, T *output,
                      gdf_size_type intermediate_output_size) {
 
         // 1st round
@@ -74,7 +74,7 @@ struct ReduceOp {
         F functor1;
         Ld1 loader1;
         launch_once((const T*)input->data, input->valid, input->size,
-                    (T*)output, intermediate_output_size, identity, functor1, loader1);
+                    (T*)output, intermediate_output_size, neutral_value, functor1, loader1);
         CUDA_CHECK_LAST();
 
         // 2nd round
@@ -88,7 +88,7 @@ struct ReduceOp {
             Ld2 loader2;
 
             launch_once(output, nullptr, intermediate_output_size,
-                        output, 1, identity, functor2, loader2);
+                        output, 1, neutral_value, functor2, loader2);
             CUDA_CHECK_LAST();
         }
 
@@ -98,7 +98,7 @@ struct ReduceOp {
     template <typename Functor, typename Loader>
     static
     void launch_once(const T *data, gdf_valid_type *valid, gdf_size_type size,
-                     T *output, gdf_size_type intermediate_output_size, T identity,
+                     T *output, gdf_size_type intermediate_output_size, T neutral_value,
                      Functor functor, Loader loader) {
         // find needed gridsize
         // use atmost REDUCTION_BLOCK_SIZE blocks
@@ -114,8 +114,9 @@ struct ReduceOp {
             output,
             // action
             functor,
-            // identity
-            identity,
+            // neutral value (applying the functor to it and another T value
+            // produces the other value)
+            neutral_value,
             // loader
             loader
         );

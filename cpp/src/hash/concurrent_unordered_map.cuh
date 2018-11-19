@@ -524,7 +524,7 @@ public:
           // and existing_key was updated to insert_key by the atomicCAS. 
           // If old_key == insert_key, this key has already been inserted. 
           // In either case, perform the atomic aggregation of existing_value and insert_value
-          // Because the hash table is initialized with the identity value of the aggregation
+          // Because the hash table is initialized with the neutral value of the aggregation
           // operation, it is safe to perform the operation when the existing_value still 
           // has its initial value
           // TODO: Use template specialization to make use of native atomic functions
