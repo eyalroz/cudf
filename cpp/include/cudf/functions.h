@@ -694,7 +694,7 @@ gdf_error gdf_validity_and(gdf_column *lhs, gdf_column *rhs, gdf_column *output)
 /* reductions
 
 The following reduction functions use the result array as a temporary working
-space.  Use gdf_reduce_optimal_output_size() to get its optimal size.
+space.  Use gdf_reduction_get_intermediate_output_size() to get its optimal size.
 */
 
 
@@ -709,7 +709,7 @@ space.  Use gdf_reduce_optimal_output_size() to get its optimal size.
  *       block sum rather than launch a second kernel. When that happens, this
  *       function can go away and the output can be a single element.
  * --------------------------------------------------------------------------*/
-unsigned int gdf_reduce_optimal_output_size();
+unsigned int gdf_reduction_get_intermediate_output_size();
 
 /* --------------------------------------------------------------------------*
  * @brief  Computes the sum of the values in all rows of a column

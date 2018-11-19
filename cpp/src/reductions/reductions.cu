@@ -64,30 +64,30 @@ template<typename T, typename F>
 struct ReduceOp {
     static
     gdf_error launch(gdf_column *input, T identity, T *output,
-                     gdf_size_type output_size) {
+                     gdf_size_type intermediate_output_size) {
 
         // 1st round
-        //    Partially reduce the input into *output_size* length.
-        //    Each block computes one output in *output*.
-        //    output_size == gridsize
+        //    Partially reduce the input into *intermediate_output_size* length.
+        //    Each block computes one output in the *output*,
+        //    so intermediate_output_size is the grid size (in block)
         typedef typename F::Loader Ld1;
         F functor1;
         Ld1 loader1;
         launch_once((const T*)input->data, input->valid, input->size,
-                    (T*)output, output_size, identity, functor1, loader1);
+                    (T*)output, intermediate_output_size, identity, functor1, loader1);
         CUDA_CHECK_LAST();
 
         // 2nd round
         //    Finish the partial reduction (if needed).
         //    A single block reduction that computes one output stored to the
         //    first index in *output*.
-        if ( output_size > 1 ) {
+        if ( intermediate_output_size > 1 ) {
             typedef typename F::second F2;
             typedef typename F2::Loader Ld2;
             F2 functor2;
             Ld2 loader2;
 
-            launch_once(output, nullptr, output_size,
+            launch_once(output, nullptr, intermediate_output_size,
                         output, 1, identity, functor2, loader2);
             CUDA_CHECK_LAST();
         }
@@ -98,13 +98,13 @@ struct ReduceOp {
     template <typename Functor, typename Loader>
     static
     void launch_once(const T *data, gdf_valid_type *valid, gdf_size_type size,
-                     T *output, gdf_size_type output_size, T identity,
+                     T *output, gdf_size_type intermediate_output_size, T identity,
                      Functor functor, Loader loader) {
         // find needed gridsize
         // use atmost REDUCTION_BLOCK_SIZE blocks
         int blocksize = REDUCTION_BLOCK_SIZE;
-        int gridsize = (output_size < REDUCTION_BLOCK_SIZE?
-                        output_size : REDUCTION_BLOCK_SIZE);
+        int gridsize = (intermediate_output_size < REDUCTION_BLOCK_SIZE?
+                        intermediate_output_size : REDUCTION_BLOCK_SIZE);
 
         // launch kernel
         gpu_reduction_op<<<gridsize, blocksize>>>(
@@ -231,6 +231,10 @@ gdf_error gdf_sum(gdf_column *col,
 {   
     return cudf::type_dispatcher(col->dtype, ReduceDispatcher<DeviceSum>(),
                                  col, dev_result, dev_result_size);
+}
+
+unsigned int gdf_reduction_get_intermediate_output_size() {
+    return REDUCTION_BLOCK_SIZE;
 }
 
 gdf_error gdf_product(gdf_column *col,
