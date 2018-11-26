@@ -89,7 +89,7 @@ typedef repeat_iterator<thrust::detail::normal_iterator<thrust::device_ptr<gdf_v
  * @return the number of bytes necessary to make available for the validity indicator pseudo-column
  */
 gdf_size_type get_number_of_bytes_for_valid(gdf_size_type column_size) {
-    return gdf::util::div_rounding_up_safe(column_size, GDF_VALID_BITSIZE);
+    return cudf::util::div_rounding_up_safe(column_size, GDF_VALID_BITSIZE);
 }
 
 struct modulus_bit_width : public thrust::unary_function<gdf_size_type, gdf_size_type>

@@ -24,7 +24,7 @@ extern "C" {
 #include <cudf.h>
 }
 
-namespace gdf {
+namespace cudf {
 
 namespace util {
 
@@ -85,7 +85,7 @@ constexpr inline I div_rounding_up_safe(I dividend, I divisor)
 }
 
 } // namespace util
-} // namespace gdf
+} // namespace cudf
 
 
 #endif // UTIL_MISCELLANY_HPP_

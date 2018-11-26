@@ -795,6 +795,20 @@ gdf_error gdf_min(gdf_column *col, void *dev_result, gdf_size_type dev_result_si
  * --------------------------------------------------------------------------*/
 gdf_error gdf_max(gdf_column *col, void *dev_result, gdf_size_type dev_result_size);
 
+/**
+ * @brief counts the number of elements of a column which with a non-zero value
+ *
+ * @param[out] col a column of one of the integral types (GDF_INT8, GDF_INT32, GDF_INT64)
+ * only(!)
+ * @param[out] dev_result Location of the count in global device memory
+ *
+ * @note This could trivially be extended to other types which can be perceived
+ * as single signed integers (e.g. dates and timestamps)
+ */
+gdf_error gdf_count_nonzeros_generic(gdf_column *col, gdf_size_type *dev_result);
+gdf_error gdf_count_nonzeros_i64(gdf_column *col, gdf_size_type *dev_result);
+gdf_error gdf_count_nonzeros_i32(gdf_column *col, gdf_size_type *dev_result);
+gdf_error gdf_count_nonzeros_i8(gdf_column *col, gdf_size_type *dev_result);
 
 /*
  * Filtering and comparison operators
