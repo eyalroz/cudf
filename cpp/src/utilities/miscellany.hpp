@@ -24,7 +24,47 @@ extern "C" {
 #include <cudf.h>
 }
 
+#include <utilities/type_dispatcher.hpp>
+
 namespace cudf {
+
+constexpr inline bool is_an_integer(gdf_dtype element_type)
+{
+    return
+        element_type == GDF_INT8  or
+        element_type == GDF_INT16 or
+        element_type == GDF_INT32 or
+        element_type == GDF_INT64;
+}
+
+constexpr bool is_nullable(gdf_column column)
+{
+    return column.valid != nullptr;
+}
+
+namespace detail {
+
+struct size_of_helper {
+    template <typename T>
+    constexpr int operator()() const { return sizeof(T); }
+};
+
+}
+
+constexpr std::size_t inline size_of(gdf_dtype element_type) {
+    return type_dispatcher(element_type, detail::size_of_helper{});
+}
+
+inline std::size_t width(const gdf_column& col)
+{
+    return size_of(col.dtype);
+}
+
+inline std::size_t data_size_in_bytes(const gdf_column& col)
+{
+    return col.size * width(col);
+}
+
 
 namespace util {
 
@@ -84,7 +124,68 @@ constexpr inline I div_rounding_up_safe(I dividend, I divisor)
         (dividend > 0);
 }
 
+template <typename T, template <typename S> class Trait>
+using having_trait_t = typename std::enable_if_t<Trait<T>::value>;
+
+// TODO: Use enable_if_T or having_trait_t to only allow the following
+// to be instantiated for integral types I
+template <typename I>
+constexpr inline bool
+is_a_power_of_two(I val)
+    // util::having_trait_t<I, std::is_integral> val)
+{
+    return ((val - 1) & val) == 0;
+}
+
+template <typename T>
+constexpr inline std::size_t size_in_bits() { return sizeof(T) * CHAR_BIT; }
+
+template <typename T>
+constexpr inline std::size_t size_in_bits(const T&) { return size_in_bits<T>(); }
+
+// TODO: Use enable_if_T or having_trait_t to only allow the following
+// to be instantiated for integral types I
+template <typename I>
+constexpr inline I
+clear_lower_bits_unsafe(
+//    util::having_trait_t<I, std::is_integral>  val,
+    I                                          val,
+    unsigned                                   num_bits_to_clear)
+{
+    auto lower_bits_mask = I{1} << (num_bits_to_clear - 1);
+    return val & ~lower_bits_mask;
+}
+
+
+// TODO: Use enable_if_T or having_trait_t to only allow the following
+// to be instantiated for integral types I
+template <typename I>
+constexpr inline I
+clear_lower_bits_safe(
+//    util::having_trait_t<I, std::is_integral> val,
+    I                                           val,
+    unsigned                                    num_bits_to_clear)
+{
+    return (num_bits_to_clear > 0) ?
+        clear_lower_bits_unsafe(val, num_bits_to_clear) : val;
+}
+
 } // namespace util
+
+// TODO: Use the cuda-api-wrappers library instead
+inline auto form_naive_1d_grid(
+    unsigned int grid_size,
+    unsigned int threads_per_block)
+{
+    struct one_dimensional_grid_params_t {
+        unsigned int num_blocks;
+        unsigned int threads_per_block;
+    };
+    auto num_blocks = util::div_rounding_up_safe(grid_size, threads_per_block);
+    return one_dimensional_grid_params_t { num_blocks, threads_per_block };
+}
+
+
 } // namespace cudf
 
 
