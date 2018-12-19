@@ -9,6 +9,7 @@ typedef int64_t gdf_date64;
 typedef int32_t gdf_date32;
 typedef int64_t gdf_timestamp;
 typedef int32_t gdf_category;
+typedef int8_t gdf_bool;
 
 /* --------------------------------------------------------------------------*/
  /**
@@ -48,6 +49,7 @@ typedef enum {
     GDF_DATASET_EMPTY,                /**< Input dataset is either null or has size 0 when it shouldn't */   
     GDF_VALIDITY_MISSING,             /**< gdf_column's validity bitmask is null */  
     GDF_VALIDITY_UNSUPPORTED,         /**< The requested gdf operation does not support validity bitmask handling, and one of the input columns has the valid bits enabled */
+    GDF_VALIDITY_MISMATCH,            /**< The requested operation was passed several columns which must all have a validity bitmask, or none have it - but this requirement was not met */
     GDF_INVALID_API_CALL,             /**< The arguments passed into the function were invalid */   
     GDF_JOIN_DTYPE_MISMATCH,          /**< Datatype mismatch between corresponding columns in  left/right tables in the Join function */   
     GDF_JOIN_TOO_MANY_COLUMNS,        /**< Too many columns were passed in for the requested join operation*/       

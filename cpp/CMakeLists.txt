@@ -148,6 +148,7 @@ add_library(cudf SHARED
             src/dataframe/column.cpp
             src/dataframe/context.cpp
             src/filter/filter_ops.cu
+            src/filter/out_of_place_partition.cu
             src/filter/dense_support.cu
             src/join/joining.cu
             src/orderby/orderby.cu

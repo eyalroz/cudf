@@ -37,10 +37,23 @@ constexpr inline bool is_an_integer(gdf_dtype element_type)
         element_type == GDF_INT64;
 }
 
-constexpr bool is_nullable(gdf_column column)
+constexpr inline bool is_integral(const gdf_column& col)
+{
+    return is_an_integer(col.dtype);
+}
+
+constexpr inline bool is_boolean(const gdf_column& col)
+{
+    return col.dtype == GDF_INT8; // For now!
+}
+
+
+constexpr bool is_nullable(const gdf_column& column)
 {
     return column.valid != nullptr;
 }
+
+
 
 namespace detail {
 

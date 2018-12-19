@@ -1,8 +1,9 @@
 #ifndef GDF_CPPTYPES_H
 #define GDF_CPPTYPES_H
 
-#include "cudf/types.h"
-#include "cudf_utils.h"
+#include <cudf/types.h>
+#include <utilities/cudf_utils.h>
+
 #include <iostream>
 
 /* --------------------------------------------------------------------------*/
